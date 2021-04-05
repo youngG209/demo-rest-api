@@ -2,12 +2,15 @@ package com.demorestapi.events;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter @Setter @EqualsAndHashCode(of = "id")
 @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity
 public class Event {
 
+    @Id @GeneratedValue
     private Integer id;
     private String name;
     private String description;
@@ -21,6 +24,8 @@ public class Event {
     private int limitOfEnrollment;
     private boolean offline;
     private boolean free;
+    // Enum의 경우 기본으로 할 시 입력된 값을 숫자로 입력되기 때문에 나중에 해당 값 순서 변경시 문제가 될 수 있으므로 String으로 변경 권장
+    @Enumerated(EnumType.STRING)
     private EventStatus eventStatus;
 
 }
