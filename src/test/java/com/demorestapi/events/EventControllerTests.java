@@ -1,5 +1,6 @@
 package com.demorestapi.events;
 
+import com.demorestapi.commen.TestDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -34,6 +35,7 @@ public class EventControllerTests {
     ObjectMapper objectMapper;
 
     @Test
+    @TestDescription("정상적으로 이벤트를 생성하는 테스트")
     public void createEvent() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -69,6 +71,7 @@ public class EventControllerTests {
     }
 
     @Test
+    @TestDescription("입력 받을 수 없는 값을 사용한 경우에 에러가 발생하는 이벤트 테스트")
     public void createEvent_BadRequest() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -95,5 +98,52 @@ public class EventControllerTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
         ;
+    }
+
+    @Test
+    @TestDescription("입력 값이 비어있는 경우에 에러가 발생하는 테스트")
+    public void createEvent_BadRequest_EmptyInput() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 04, 05, 13, 30))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 04, 06, 13, 30))
+                .beginEventDateTime(LocalDateTime.of(2021, 04, 05, 13, 30))
+                .endEventDateTime(LocalDateTime.of(2021, 04, 06, 13, 30))
+                .basePrice(1000000)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("dd")
+                .build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto))
+        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("입력 값이 잘못된 경우에 에러가 발생하는 테스트")
+    public void createEvent_BadRequest_WrongInput() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 04, 05, 13, 30))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 04, 06, 13, 30))
+                .beginEventDateTime(LocalDateTime.of(2021, 04, 05, 13, 30))
+                .endEventDateTime(LocalDateTime.of(2021, 04, 06, 13, 30))
+                .basePrice(1000000)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("dd")
+                .build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto))
+        )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }
