@@ -2,7 +2,9 @@ package com.demorestapi.events;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -39,15 +41,24 @@ public class EventController {
         }
 
         eventValidator.validate(eventDto, errors);
+
         if (errors.hasErrors()){
             return ResponseEntity.badRequest().body(errors);
         }
 
-        Event event = modelMapper.map(eventDto, Event.class);
-        event.update();
-        Event saveEvent = this.eventRepository.save(event);
+        Event newEvent = eventRepository.save(modelMapper.map(eventDto, Event.class));
+        Integer eventId = newEvent.getId();
+        newEvent.update();
 
-        URI uri = linkTo(EventController.class).slash(saveEvent.getId()).toUri();
-        return ResponseEntity.created(uri).body(event);
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(eventId);
+
+        URI uri = selfLinkBuilder.toUri();
+
+        EntityModel eventResource = EntityModel.of(newEvent);
+        eventResource.add(linkTo(EventController.class).slash(eventId).withSelfRel());
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+
+        return ResponseEntity.created(uri).body(eventResource);
     }
 }
